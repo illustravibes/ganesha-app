@@ -41,6 +41,7 @@ RUN php artisan vendor:publish --force --tag=livewire:assets
 RUN php artisan filament:assets
 RUN php artisan filament:cache-components
 RUN php artisan migrate --force
+RUN php artisan key:generate
 RUN php artisan storage:link
 
 # Set permissions

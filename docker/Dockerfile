@@ -59,8 +59,6 @@ RUN php artisan view:cache
 RUN php artisan vendor:publish --force --tag=livewire:assets
 RUN php artisan filament:assets
 RUN php artisan filament:cache-components
-RUN php artisan migrate --force
-RUN php artisan storage:link
 
 # Expose port 9000
 EXPOSE 9000

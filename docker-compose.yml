@@ -1,4 +1,4 @@
-# version: "3"
+version: "3"
 
 services:
     app:
@@ -9,8 +9,15 @@ services:
         restart: unless-stopped
         working_dir: /var/www/html
         volumes:
+            # Use more selective volume mounts to prevent overwriting container changes
             - ./:/var/www/html:cached
+            - /var/www/html/vendor
+            - /var/www/html/storage
+            - /var/www/html/bootstrap/cache
             - composer_cache:/var/www/.composer
+        environment:
+            - APP_ENV=${APP_ENV:-production}
+            - APP_DEBUG=${APP_DEBUG:-false}
         networks:
             - filament_network
         depends_on:
@@ -21,10 +28,14 @@ services:
         container_name: filament_nginx
         restart: unless-stopped
         ports:
-            - "80:80"  # Changed from 8080:80 to allow direct domain access
+            - "80:80"
+            - "443:443"  # Added for HTTPS support
         volumes:
             - ./:/var/www/html:cached
+            - /var/www/html/vendor
+            - /var/www/html/storage
             - ./docker/nginx/conf.d:/etc/nginx/conf.d
+            # - ./docker/nginx/ssl:/etc/nginx/ssl  # Uncomment when you have SSL certificates
         networks:
             - filament_network
         depends_on:
@@ -42,9 +53,14 @@ services:
         volumes:
             - postgres_data:/var/lib/postgresql/data
         ports:
-            - "54321:5432"
+            - "127.0.0.1:54321:5432"  # Restrict to localhost access only
         networks:
             - filament_network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
 networks:
     filament_network:

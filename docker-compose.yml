@@ -21,7 +21,7 @@ services:
         container_name: filament_nginx
         restart: unless-stopped
         ports:
-            - "8080:80"
+            - "80:80"  # Changed from 8080:80 to allow direct domain access
         volumes:
             - ./:/var/www/html:cached
             - ./docker/nginx/conf.d:/etc/nginx/conf.d

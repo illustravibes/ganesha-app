@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        container_name: filament_app
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html:cached
+            - composer_cache:/var/www/.composer
+        networks:
+            - filament_network
+        depends_on:
+            - db
+
+    nginx:
+        image: nginx:alpine
+        container_name: filament_nginx
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www/html:cached
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        networks:
+            - filament_network
+        depends_on:
+            - app
+
+    db:
+        image: postgres:14
+        container_name: filament_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE:-ganesha-app}
+            POSTGRES_USER: ${DB_USERNAME:-postgres}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+            POSTGRES_HOST_AUTH_METHOD: trust
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - "54321:5432"
+        networks:
+            - filament_network
+
+networks:
+    filament_network:
+        driver: bridge
+
+volumes:
+    postgres_data:
+    composer_cache:
